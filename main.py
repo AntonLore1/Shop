@@ -63,8 +63,14 @@ async def order_items(message: types.Message, state: FSMContext):
     response_categories = requests.get(url_categories)
     content_categories = BeautifulSoup(response_categories.text, 'lxml')
     await bot_tg.send_message(message.from_user.id, f'Товары категории "{message.text}":')
-    for name in content_categories.find_all('div', class_='MarketItemCard__name MarketItemCard__name--multiline'):
-        await bot_tg.send_message(message.from_user.id, name.text)
+    for item in content_categories.find_all('div', class_='MarketItems__card'):
+        name = item.find('div', class_='MarketItemCard__name MarketItemCard__name--multiline').text
+        price = item.find('div', class_='MarketItemCard__currentPrice').text
+        caption = f'{name}\nЦена: {price}'
+        await bot_tg.send_photo(message.from_user.id,
+                                item.find('img').get('src'),
+                                caption=caption,
+                                reply_markup=config.select_order)
 
 
 
