@@ -11,6 +11,12 @@ from bs4 import BeautifulSoup
 logging.basicConfig(level=logging.INFO)
 bot_tg = Bot(token=config.TOKEN)
 bot = Dispatcher(bot_tg, storage=MemoryStorage())
+url_store = 'https://vk.com/market-124544144'
+response = requests.get(url_store)
+content = BeautifulSoup(response.text, 'lxml')
+
+class Data(StatesGroup):
+    categories = State()
 
 @bot.message_handler(commands=['start'])
 async def main(message: types.Message):
@@ -29,22 +35,36 @@ async def callback_inline(query: types.CallbackQuery):
                                 Цена: 99 ₽""",
                                 reply_markup=config.basket_item)
     elif query.data == 'order':
-        k = ['Koshō Car Collection | KCC', 'Оригинальные Японские издания', 'Все Цурикава | Tsurikawa', 'Постеры']
+
+
+        categories = []
+        items = content.find_all('div', class_='AlbumItemInfo__title')
+        for item in items:
+            categories.append(item.text)
         order = types.ReplyKeyboardMarkup(resize_keyboard=True)
-        order.add(*k)
+        order.add(*categories)
         await bot_tg.send_message(query.from_user.id, "Выберите категорию товаров", reply_markup=order)
-        await bot_tg.delete_message(query.message.chat.id, query.message.message_id + 1)
-        await bot_tg.send_message(query.from_user.id, 'Товары категории "Постеры":')
-        await bot_tg.send_photo(query.from_user.id,
-                                "https://sun1.sibirix.userapi.com/impg/f5p-6FtfnCkbZmq4sz6JnesfgsS5unkdpNKfgw/d_QvwvPB_p4.jpg?size=520x0&quality=95&sign=eceab7ae197b0009fb513a2dccae0997",
-                                caption="""Постер Warp Meet | Nissan GT-R R35 | A2
-В наличии: 8 штук
-Цена: 505₽""",
-                                reply_markup=config.order_item)
+        await Data.categories.set()
+
+
+
+
     elif query.data == 'buy':
         await bot_tg.send_message(query.from_user.id, "Введите свое ФИО", )
 
-
+@bot.message_handler(content_types='text', state=Data.categories)
+async def order_items(message: types.Message, state: FSMContext):
+    url_categories = "https://vk.com/"
+    blocks = content.find_all('div', class_='AlbumsBlock__album')
+    for item in blocks:
+        if str(item.find('div', class_='AlbumItemInfo__title').text) == message.text:
+            id_categories = item.find('a', class_='AlbumItem al_album', href=True)
+            url_categories = url_categories + id_categories['href']
+    response_categories = requests.get(url_categories)
+    content_categories = BeautifulSoup(response_categories.text, 'lxml')
+    await bot_tg.send_message(message.from_user.id, f'Товары категории "{message.text}":')
+    for name in content_categories.find_all('div', class_='MarketItemCard__name MarketItemCard__name--multiline'):
+        await bot_tg.send_message(message.from_user.id, name.text)
 
 
 
