@@ -61,7 +61,7 @@ async def callback_inline(query: types.CallbackQuery):
     elif query.data == 'add_in_order':
         await bot_tg.send_message(query.from_user.id, "Введите кол-во товара")
         await Data.count.set()
-        ((query.message.caption).split('\n'))[0]
+        # ((query.message.caption).split('\n'))[0]
 
 @bot.message_handler(content_types='text', state=Data.categories)
 async def order_items(message: types.Message, state: FSMContext):
