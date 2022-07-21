@@ -11,9 +11,14 @@ from bs4 import BeautifulSoup
 logging.basicConfig(level=logging.INFO)
 bot_tg = Bot(token=config.TOKEN)
 bot = Dispatcher(bot_tg, storage=MemoryStorage())
-url_store = 'https://vk.com/market-124544144'
+access_token = 'vk1.a.0_uidx0Yt7cPKAuk0SR4nMF9iVoxMm3gQrXZxLFoJnJ_U4Z1s0YoA5RvPNZgEbcfj76p6-b8s3_L_Mnt56yR5BVquDSrXJhdLvxchpyPi4E0XRivLio_YoN1r1Fkk52-Q4shrPlDLRnkFWZvs8q28KL32Ydddl30CZZcZhxyaOiedUsFJtDbG8e5xAPEHSmT'
+owner_id = '-124544144'
+url_store = f'https://api.vk.com/method/market.getAlbums?owner_id={owner_id}&count=22&access_token={access_token}&v=5.131'
+
 response = requests.get(url_store)
 content = BeautifulSoup(response.text, 'lxml')
+
+
 
 class Data(StatesGroup):
     categories = State()
@@ -35,42 +40,66 @@ async def callback_inline(query: types.CallbackQuery):
                                 Цена: 99 ₽""",
                                 reply_markup=config.basket_item)
     elif query.data == 'order':
-
-
         categories = []
-        items = content.find_all('div', class_='AlbumItemInfo__title')
-        for item in items:
-            categories.append(item.text)
+        for item in response.json()['response']['items']:
+            categories.append(item.get('title'))
         order = types.ReplyKeyboardMarkup(resize_keyboard=True)
         order.add(*categories)
         await bot_tg.send_message(query.from_user.id, "Выберите категорию товаров", reply_markup=order)
         await Data.categories.set()
-
-
-
-
     elif query.data == 'buy':
         await bot_tg.send_message(query.from_user.id, "Введите свое ФИО", )
 
 @bot.message_handler(content_types='text', state=Data.categories)
 async def order_items(message: types.Message, state: FSMContext):
-    url_categories = "https://vk.com/"
-    blocks = content.find_all('div', class_='AlbumsBlock__album')
-    for item in blocks:
-        if str(item.find('div', class_='AlbumItemInfo__title').text) == message.text:
-            id_categories = item.find('a', class_='AlbumItem al_album', href=True)
-            url_categories = url_categories + id_categories['href']
-    response_categories = requests.get(url_categories)
-    content_categories = BeautifulSoup(response_categories.text, 'lxml')
-    await bot_tg.send_message(message.from_user.id, f'Товары категории "{message.text}":')
-    for item in content_categories.find_all('div', class_='MarketItems__card'):
-        name = item.find('div', class_='MarketItemCard__name MarketItemCard__name--multiline').text
-        price = item.find('div', class_='MarketItemCard__currentPrice').text
-        caption = f'{name}\nЦена: {price}'
-        await bot_tg.send_photo(message.from_user.id,
-                                item.find('img').get('src'),
-                                caption=caption,
-                                reply_markup=config.select_order)
+    await bot_tg.send_message(message.from_user.id, 'Wait...', reply_markup=types.ReplyKeyboardRemove())
+    await bot_tg.delete_message(message.chat.id, message.message_id + 1)
+    for item in response.json()['response']['items']:
+        name = item.get('title')
+        if name == message.text:
+            album_id = item.get('id')
+            album_count = item.get('count')
+            if album_count > 200:
+                l = [200 for x in range(album_count // 200)]
+                l.append(album_count - (200 * (album_count // 200)))
+                ind = 0
+                for count in l:
+                    if ind == len(l) - 1:
+                        break
+                    else:
+                        response_album = requests.get(f'https://api.vk.com/method/market.get?owner_id=-124544144&album_id={album_id}&count={count}&offset={200*ind}&access_token=vk1.a.0_uidx0Yt7cPKAuk0SR4nMF9iVoxMm3gQrXZxLFoJnJ_U4Z1s0YoA5RvPNZgEbcfj76p6-b8s3_L_Mnt56yR5BVquDSrXJhdLvxchpyPi4E0XRivLio_YoN1r1Fkk52-Q4shrPlDLRnkFWZvs8q28KL32Ydddl30CZZcZhxyaOiedUsFJtDbG8e5xAPEHSmT&v=5.131')
+                        for item in response_album.json()['response']['items']:
+                            caption = f"{item.get('title')}\nЦена: {item.get('price').get('text')}"
+                            await bot_tg.send_photo(message.from_user.id,
+                                                    item.get('thumb_photo'),
+                                                    caption=caption,
+                                                    reply_markup=config.select_order,)
+                    ind = ind + 1
+            else:
+                response_album = requests.get(f'https://api.vk.com/method/market.get?owner_id=-124544144&album_id={album_id}&count={album_count}&access_token=vk1.a.0_uidx0Yt7cPKAuk0SR4nMF9iVoxMm3gQrXZxLFoJnJ_U4Z1s0YoA5RvPNZgEbcfj76p6-b8s3_L_Mnt56yR5BVquDSrXJhdLvxchpyPi4E0XRivLio_YoN1r1Fkk52-Q4shrPlDLRnkFWZvs8q28KL32Ydddl30CZZcZhxyaOiedUsFJtDbG8e5xAPEHSmT&v=5.131')
+                for item in response_album.json()['response']['items']:
+                    caption = f"{item.get('title')}\nЦена: {item.get('price').get('text')}"
+                    await bot_tg.send_photo(message.from_user.id,
+                                            item.get('thumb_photo'),
+                                            caption=caption,
+                                            reply_markup=config.select_order)
+
+    await state.finish()
+    # for item in blocks:
+    #     if str(item.find('div', class_='AlbumItemInfo__title').text) == message.text:
+    #         id_categories = item.find('a', class_='AlbumItem al_album', href=True)
+    #         url_categories = url_categories + id_categories['href']
+    # response_categories = requests.get(url_categories)
+    # content_categories = BeautifulSoup(response_categories.text, 'lxml')
+    # await bot_tg.send_message(message.from_user.id, f'Товары категории "{message.text}":')
+    # for item in content_categories.find_all('div', class_='MarketItems__card'):
+    #     name = item.find('div', class_='MarketItemCard__name MarketItemCard__name--multiline').text
+    #     price = item.find('div', class_='MarketItemCard__currentPrice').text
+    #     caption = f'{name}\nЦена: {price}'
+    #     await bot_tg.send_photo(message.from_user.id,
+    #                             item.find('img').get('src'),
+    #                             caption=caption,
+    #                             reply_markup=config.select_order)
 
 
 
