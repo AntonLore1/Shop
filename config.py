@@ -1,8 +1,11 @@
 from aiogram import types
 
-TOKEN = "5577256502:AAFGz0lyhXGaBXlSJ-e99kIWbDjvKOLSKtk"
+TOKEN = '5577256502:AAFGz0lyhXGaBXlSJ-e99kIWbDjvKOLSKtk'
+access_token = 'vk1.a.0_uidx0Yt7cPKAuk0SR4nMF9iVoxMm3gQrXZxLFoJnJ_U4Z1s0YoA5RvPNZgEbcfj76p6-b8s3_L_Mnt56yR5BVquDSrXJhdLvxchpyPi4E0XRivLio_YoN1r1Fkk52-Q4shrPlDLRnkFWZvs8q28KL32Ydddl30CZZcZhxyaOiedUsFJtDbG8e5xAPEHSmT'
+owner_id = '-124544144'
+v = '5.131'
 
-button = ["basket", "buy", "vk", "delete", "buy", "order"]
+button = ["basket", "buy", "vk", "delete", "buy", "order", "add_in_order"]
 basket = types.InlineKeyboardButton("Корзина", callback_data='basket')
 order = types.InlineKeyboardButton("Заказ", callback_data='order')
 vk = types.InlineKeyboardButton("VK Store", url="https://vk.com/koshoshop")
