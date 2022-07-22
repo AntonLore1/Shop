@@ -16,7 +16,6 @@ logging.basicConfig(level=logging.INFO)
 bot_tg = Bot(token=config.TOKEN)
 bot = Dispatcher(bot_tg, storage=MemoryStorage())
 database = ScriptsBot('shop.db')
-
 url_store = f'https://api.vk.com/method/market.getAlbums?owner_id={config.owner_id}&count=100&access_token={config.access_token}&v={config.v}'
 response = requests.get(url_store)
 
