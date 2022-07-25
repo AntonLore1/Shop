@@ -1,6 +1,6 @@
 from aiogram import types
 
-TOKEN = '5577256502:AAFGz0lyhXGaBXlSJ-e99kIWbDjvKOLSKtk'
+TOKEN = '5435648880:AAEfC8-ZS8jxptllFKf56h6BK8n8JZu7pbE'
 access_token = 'vk1.a.z0FBiWRvLPY69U7dSOcfqyiaWPXe6gmt1ukM_JDZRfP4NVaTrM2yufz7LyNAJH3xOGYFBuSCJ2MU2l4TMGXLb8pbjPYz3KFrUqhyXqE5LovY1Gow2cP_oE2rJbUeqGpD_sUUl8w2089d_yTUVsE8fP42kEJTEy6m3RrxfUTHfSDC1SCDQkQhoect2mOuJ6YD'
 owner_id = '-124544144'
 v = '5.131'

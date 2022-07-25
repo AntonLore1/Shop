@@ -1,4 +1,4 @@
-import nums_from_string
+
 from aiogram import Bot, Dispatcher, types
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.utils import executor
@@ -8,7 +8,7 @@ import logging
 import config
 import requests
 from script import ScriptsBot
-
+import re
 
 
 
@@ -67,7 +67,7 @@ async def callback_inline(query: types.CallbackQuery, state: FSMContext):
         elif query.data == 'add_in_order':
             await state.update_data(title=((query.message.caption).split('\n'))[0])
             await state.update_data(img=(query.message.photo)[0]['file_id'])
-            await state.update_data(price=(nums_from_string.get_nums(((query.message.caption).split('\n'))[1]))[0])
+            await state.update_data(price=''.join(re.findall("\d+", ((query.message.caption).split('\n'))[1])))
             await bot_tg.send_message(query.from_user.id, "Введите кол-во товара")
             await Data.count.set()
         elif query.data == 'delete':
