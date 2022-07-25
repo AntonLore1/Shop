@@ -25,8 +25,8 @@ class ScriptsBot:
         return items
 
     def get_price_items(self, id):
-        items = self.cursor.execute('SELECT price FROM user_order WHERE id = ?', (id,)).fetchall()
-        prices = [item[0] for item in items]
+        items = self.cursor.execute('SELECT * FROM user_order WHERE id = ?', (id,)).fetchall()
+        prices = [item[2] * item[4] for item in items]
         return sum(prices)
 
     def delete_item(self, title, id):
