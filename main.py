@@ -166,7 +166,7 @@ async def get_phone(message: types.Message, state: FSMContext):
         await state.update_data(phone=phone)
         info = await state.get_data()
         await bot_tg.send_message(message.from_user.id, 'Заказ успешно оформлен')
-        await bot_tg.send_message(message.from_user.id, f"""<b>Заказ</b>
+        await bot_tg.send_message(203901264, f"""<b>Заказ</b>
         
     <u>Товары:</u>
     {database.get_items(message.from_user.id)}
@@ -178,6 +178,7 @@ async def get_phone(message: types.Message, state: FSMContext):
 <u>Telegram тэг:</u> {info['tag']}
 <u>Номер телефона:</u> {info['phone']}""",
         parse_mode='HTML')
+        database.clean(message.from_user.id)
         await state.finish()
     except:
         print('Error in function get_phone')

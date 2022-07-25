@@ -32,3 +32,7 @@ class ScriptsBot:
     def delete_item(self, title, id):
         self.cursor.execute("DELETE FROM user_order WHERE (title = ? and id = ?)", (title, id,))
         self.connection.commit()
+
+    def clean(self, id):
+        self.cursor.execute("DELETE FROM user_order WHERE id = ?", (id,))
+        self.connection.commit()
