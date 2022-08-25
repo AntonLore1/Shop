@@ -4,7 +4,7 @@ import sqlite3
 
 class ScriptsBot:
     def __init__(self, database):
-        self.connection = sqlite3.connect(database)
+        self.connection = sqlite3.connect(database, check_same_thread = True)
         self.cursor = self.connection.cursor()
 
     def add_in_order(self, id, title, count, img, price):

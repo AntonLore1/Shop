@@ -44,15 +44,17 @@ async def main(message: types.Message):
 async def callback_inline(query: types.CallbackQuery, state: FSMContext):
     try:
         if query.data == 'basket':
-            await bot_tg.send_message(query.from_user.id, "Список товаров в вашей корзине:")
-            for item in database.get_info_item(query.from_user.id):
-                await bot_tg.send_photo(query.from_user.id, f'{item[3]}',
-                                        caption=f"""{item[1]}
+            if database.get_info_item(query.from_user.id) == []:
+                await bot_tg.send_message(query.from_user.id, "Ваша корзина пуста", reply_markup=config.empty_order)
+            else:
+                await bot_tg.send_message(query.from_user.id, "Список товаров в вашей корзине:")
+                for item in database.get_info_item(query.from_user.id):
+                    await bot_tg.send_photo(query.from_user.id, f'{item[3]}',
+                                            caption=f"""{item[1]}
 Цена: {item[4]}₽
 Количество: {item[2]}""",
-                                        reply_markup=config.basket_item)
-            await bot_tg.send_message(query.from_user.id, f"Общая стоимость товаров в вашей корзине: {database.get_price_items(query.from_user.id)}₽", reply_markup=config.buy_order)
-
+                                            reply_markup=config.basket_item)
+                await bot_tg.send_message(query.from_user.id, f"Общая стоимость товаров в вашей корзине: {database.get_price_items(query.from_user.id)}₽", reply_markup=config.buy_order)
         elif query.data == 'order':
             categories = []
             for item in response.json()['response']['items']:
